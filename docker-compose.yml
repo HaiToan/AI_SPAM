@@ -5,12 +5,14 @@ services:
     image: postgres:15
     container_name: spam_filter_db
     restart: always
+    command: postgres -c timezone=Asia/Ho_Chi_Minh -c log_timezone=Asia/Ho_Chi_Minh
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: gmail_spam_db
+      TZ: Asia/Ho_Chi_Minh
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

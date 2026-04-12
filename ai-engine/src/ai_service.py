@@ -21,7 +21,7 @@ DB_CONFIG = {
     "user": "postgres",
     "password": "admin",
     "host": "localhost",
-    "port": "5432"
+    "port": "5433"
 }
 
 # Danh sách từ khóa ép SPAM (Để chữa cháy khi AI đoán sai)
@@ -30,7 +30,7 @@ BLACKLIST_KEYWORDS = ['win', 'million', 'dollars', 'prize', 'khuyến mãi', 'sh
                     'cơ hội', 'hấp dẫn', 'không thể bỏ lỡ', 'đăng ký ngay', 'nhận quà', 'ưu đãi', 'giảm giá sốc',
                     'khuyến mãi lớn', 'mua 1 tặng 1', 'điện thoại miễn phí', 'không cần thẻ tín dụng',
                     'đăng ký miễn phí', 'cơ hội trúng thưởng', 'giảm giá cực sốc', 'không mất tiền', 'đặc biệt chỉ hôm nay', 'nhận ngay ưu đãi', 'giảm giá lên đến'
-                    , 'phù hợp với bạn', 'on LinkedIn', 'đang phát trực tiếp']
+                    , 'phù hợp với bạn', 'on LinkedIn', 'đang phát trực tiếp','khởi đầu sự nghiệp với ngành sales', 'khởi đầu sự nghiệp vào ngành sales', 'hởi đầu sự nghiệp với ngành sales']
 
 def save_to_db(snippet, prediction):
     try:
@@ -67,8 +67,8 @@ def predict(content: str):
         # Nếu model hỗ trợ predict_proba, ta sẽ hạ ngưỡng xuống để dễ ra SPAM hơn
         try:
             probs = model.predict_proba(vectorized_text)[0]
-            # Giả sử index 1 là spam, nếu xác suất > 30% thì cho là spam luôn
-            prediction = 'spam' if probs[1] > 0.3 else 'ham'
+            # Giả sử index 1 là spam, nếu xác suất > 60% thì cho là spam
+            prediction = 'spam' if probs[1] > 0.6 else 'ham'
         except:
             # Nếu model không hỗ trợ proba thì dùng predict mặc định
             prediction = model.predict(vectorized_text)[0]

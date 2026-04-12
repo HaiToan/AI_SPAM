@@ -16,7 +16,7 @@ DB_CONFIG = {
     "database": "gmail_spam_db",
     "user": "postgres",
     "password": "admin",
-    "port": 5432
+    "port": 5433
 }
 
 processed_ids = set()
@@ -83,18 +83,31 @@ def run_filter():
                 processed_ids.add(msg_id)
 
                 # 3. LỆNH DI CHUYỂN VÀO THƯ RÁC (SPAM)
+                label_ids = message.get('labelIds', [])
                 if prediction == 'spam':
-                    service.users().messages().modify(
-                        userId='me', 
-                        id=msg_id,
-                        body={
-                            'removeLabelIds': ['INBOX'], 
-                            'addLabelIds': ['SPAM']      
-                        }
-                    ).execute()
+                    if 'SPAM' not in label_ids:
+                        service.users().messages().modify(
+                            userId='me', 
+                            id=msg_id,
+                            body={
+                                'removeLabelIds': ['INBOX'], 
+                                'addLabelIds': ['SPAM']      
+                            }
+                        ).execute()
                     status = "🚩 SPAM (Đã đưa vào thư rác)"
                 else:
-                    status = "✅ HAM"
+                    if 'SPAM' in label_ids:
+                        service.users().messages().modify(
+                            userId='me', 
+                            id=msg_id,
+                            body={
+                                'removeLabelIds': ['SPAM'], 
+                                'addLabelIds': ['INBOX']      
+                            }
+                        ).execute()
+                        status = "✅ HAM (Đã cứu từ thư rác về Inbox)"
+                    else:
+                        status = "✅ HAM"
 
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] MỚI: {status} | {subject[:40]}...")
 
@@ -108,9 +121,9 @@ def run_filter():
     conn.close()
 
 if __name__ == '__main__':
-    print("==================================================")
+    print("==============================")
     print("=== HỆ THỐNG LỌC MAIL SPAM ===")
-    print("==================================================")
+    print("==============================")
     
     try:
         while True:

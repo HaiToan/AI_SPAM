@@ -17,12 +17,24 @@ def train_model():
         print(f"Lỗi: Không tìm thấy file tại {DATA_PATH}")
         return
 
-    df = pd.read_csv(DATA_PATH, encoding='latin-1')
+    df_eng = pd.read_csv(DATA_PATH, encoding='latin-1')
     
-    # Giả sử file của ông có cột v1 (label) và v2 (text) như ông nói
-    # Xử lý tên cột nếu cần (xóa các cột dư thừa nếu có)
+    # Đọc thêm data tiếng Việt
+    VIE_DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'vie_dataset.csv')
+    if os.path.exists(VIE_DATA_PATH):
+        df_vie = pd.read_csv(VIE_DATA_PATH, encoding='latin-1')
+        df = pd.concat([df_eng, df_vie], ignore_index=True)
+    else:
+        df = df_eng
+        print(f"Cảnh báo: Không tìm thấy data tiếng Việt tại {VIE_DATA_PATH}")
+    
+    # Giữ lại 2 cột chính
     df = df[['v1', 'v2']]
     df.columns = ['label', 'text']
+    
+    # Lọc bỏ các dòng rác (như dòng header thừa trong vie_dataset) và rỗng
+    df = df[df['label'].isin(['ham', 'spam'])]
+    df = df.dropna()
 
     print("--- Thống kê trước khi xử lý mất cân bằng ---")
     print(df['label'].value_counts())
@@ -54,8 +66,8 @@ def train_model():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # 6. Vector hóa văn bản với TF-IDF
-    # Loại bỏ từ dừng tiếng Anh (stopwords)
-    tfidf = TfidfVectorizer(stop_words='english', max_features=5000)
+    # Không dùng stop_words tiếng Anh để giữ nguyên ngữ cảnh tiếng Việt
+    tfidf = TfidfVectorizer(max_features=5000)
     X_train_tfidf = tfidf.fit_transform(X_train)
     X_test_tfidf = tfidf.transform(X_test)
 

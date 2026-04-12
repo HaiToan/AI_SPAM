@@ -6,7 +6,7 @@ const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   database: process.env.DB_NAME || 'gmail_spam_db',
   password: process.env.DB_PASSWORD || 'admin',
-  port: process.env.DB_PORT || 5432,
+  port: process.env.DB_PORT || 5433,
 });
 
 module.exports = pool;

@@ -9,7 +9,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
 # --- CẤU HÌNH ---
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.profile']
 AI_SERVICE_URL = "http://localhost:8000/predict"
 DB_CONFIG = {
     "host": "localhost",
@@ -105,7 +105,7 @@ def run_filter():
                                 'addLabelIds': ['INBOX']      
                             }
                         ).execute()
-                        status = "✅ HAM (Đã cứu từ thư rác về Inbox)"
+                        status = "✅ HAM (An toàn)"
                     else:
                         status = "✅ HAM"
 
@@ -113,6 +113,13 @@ def run_filter():
 
             except Exception as e:
                 print(f"   ❌ Lỗi mail {msg_id}: {e}")
+
+        # [MỚI] Thông báo cho Frontend biết để cập nhật Real-time
+        if new_mail_found:
+            try:
+                requests.post("http://localhost:5000/api/notify", timeout=2)
+            except Exception:
+                pass
 
         if not new_mail_found:
             print(f"[{datetime.now().strftime('%H:%M:%S')}] 5 mail gần nhất đã được lọc xong, đang đợi email mới...")
